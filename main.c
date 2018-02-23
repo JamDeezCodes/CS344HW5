@@ -18,26 +18,67 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	printf("%s\n", argv[2]);
+	//Store file in buffer
 	
-	// FILE *ImageToProcess;
-	// ImageToProcess = fopen(argv[3], "r");
+	FILE *imageToProcess;
+	imageToProcess = fopen(argv[2], "r");
 	
-	int n = atoi(argv[1]);
-	int i;
-	pthread_t *threads = (pthread_t*)malloc(sizeof(pthread_t)*n);
+	int ***pixels;
+	char type[70];;
+	int width, height, maxPixelValue;
+	int red, blue, green;
 	
-	for(i = 0; i < n; i++)
+	if(!imageToProcess)
 	{
-		printf("main: spawning thread %d..\n", i);
-		pthread_create(&threads[i], NULL, fx, (void *)(i + 1));
+		fprintf(stderr, "This CANNAWT Beeee\n");
+		exit(1);
 	}
+	else
+	{
+		//Store file header
+		fscanf(imageToProcess, "%s", type);
+		fscanf(imageToProcess, "%d", &width);
+		fscanf(imageToProcess, "%d", &height);
+		fscanf(imageToProcess, "%d", &maxPixelValue);
+		fclose(imageToProcess);
+		fprintf(stderr, "type: %s width: %d height: %d maxPixelValue: %d\n", type, width, height, maxPixelValue);
+		
+	}
+	
 
-	for(i = 0; i < n; i++)
-	{
-		printf("main: joining thread %d..\n", i);
-		pthread_join(threads[i], NULL);
-	}
 	
+
+
+
 	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	// int n = atoi(argv[1]);
+	// int i;
+	// pthread_t *threads = (pthread_t*)malloc(sizeof(pthread_t)*n);
+	
+	// for(i = 0; i < n; i++)
+	// {
+		// printf("main: spawning thread %d..\n", i);
+		// pthread_create(&threads[i], NULL, fx, (void *)(i + 1));
+	// }
+
+	// for(i = 0; i < n; i++)
+	// {
+		// printf("main: joining thread %d..\n", i);
+		// pthread_join(threads[i], NULL);
+	// }
 }
