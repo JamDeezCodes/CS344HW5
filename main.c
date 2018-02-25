@@ -12,7 +12,7 @@ void *fx (void *arg)
 
 int main(int argc, char **argv)
 {
-	if(argc != 3)
+	if(argc != 4)
 	{
 		fprintf(stderr, "usage: ./a.out num_threads option [arg]\n");
 		exit(1);
@@ -27,7 +27,7 @@ int main(int argc, char **argv)
 	//Store file in buffer
 	
 	FILE *image_to_process;
-	image_to_process = fopen(argv[2], "r");
+	image_to_process = fopen(argv[3], "r");
 	
 	if(!image_to_process)
 	{
@@ -66,23 +66,22 @@ int main(int argc, char **argv)
 			}
 		}
 		
-		//Perform image processing
+		// Perform image processing
 		
-		// int n = atoi(argv[1]);
-		// int i;
-		// pthread_t *threads = (pthread_t*)malloc(sizeof(pthread_t)*n);
+		int number_of_threads = atoi(argv[1]);
+		pthread_t *threads = (pthread_t*)malloc(sizeof(pthread_t)*number_of_threads);
 		
-		// for(i = 0; i < n; i++)
-		// {
-			// printf("main: spawning thread %d..\n", i);
-			// pthread_create(&threads[i], NULL, fx, (void *)(i + 1));
-		// }
+		for(i = 0; i < number_of_threads; i++)
+		{
+			printf("main: spawning thread %d..\n", i);
+			pthread_create(&threads[i], NULL, fx, (void *)(i + 1));
+		}
 
-		// for(i = 0; i < n; i++)
-		// {
-			// printf("main: joining thread %d..\n", i);
-			// pthread_join(threads[i], NULL);
-		// }
+		for(i = 0; i < number_of_threads; i++)
+		{
+			printf("main: joining thread %d..\n", i);
+			pthread_join(threads[i], NULL);
+		}
 		
 		//Print image to stdout
 		
