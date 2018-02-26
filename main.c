@@ -8,6 +8,7 @@ typedef struct image
 	int rows;
 	int columns;
 	int max_pixel_value;
+	float contrast_percentage;
 } image;
 
 void *change_image_to_red (void *arg)
@@ -126,6 +127,135 @@ void *invert_image (void *arg)
 	return NULL;
 }
 
+void *right_rotate_image (void *arg)
+{
+	struct image *image_object = (struct image*) arg;
+	
+	int row_index, column_index;
+	int red_temp, blue_temp, green_temp;
+	int i, j, ***pixels;
+	
+	int new_rows = image_object->columns;
+	int new_columns = image_object->rows;
+	
+	// Allocate new array for pixels
+	pixels = (int ***) malloc(sizeof(int **) * image_object->columns);
+	for(i = 0; i < image_object->columns; i++)
+	{
+		pixels[i] = (int **) malloc(sizeof(int *) * image_object->rows);
+		for(j = 0; j < image_object->rows; j++)
+		{
+			pixels[i][j] = (int *) malloc(sizeof(int) * 3);
+		}
+	}
+	
+	for
+	(	
+		row_index = 0; 
+		row_index < image_object->columns;
+		row_index++
+	)
+	{
+		for
+		(
+			column_index = (image_object->rows-1);
+			column_index > 0;
+			column_index--
+		)
+		{
+			
+			pixels[row_index][column_index][0] = image_object->pixels[image_object->rows - column_index][row_index][0];
+			pixels[row_index][column_index][1] = image_object->pixels[image_object->rows - column_index][row_index][1];
+			pixels[row_index][column_index][2] = image_object->pixels[image_object->rows - column_index][row_index][2];
+			
+		}
+	}
+	
+	image_object->pixels = pixels;
+	image_object->rows = new_rows;
+	image_object->columns = new_columns;
+	
+	return NULL;
+}
+
+void *left_rotate_image (void *arg)
+{
+	struct image *image_object = (struct image*) arg;
+	
+	int row_index, column_index;
+	int red_temp, blue_temp, green_temp;
+	int i, j, ***pixels;
+	
+	int new_rows = image_object->columns;
+	int new_columns = image_object->rows;
+	
+	// Allocate new array for pixels
+	pixels = (int ***) malloc(sizeof(int **) * image_object->columns);
+	for(i = 0; i < image_object->columns; i++)
+	{
+		pixels[i] = (int **) malloc(sizeof(int *) * image_object->rows);
+		for(j = 0; j < image_object->rows; j++)
+		{
+			pixels[i][j] = (int *) malloc(sizeof(int) * 3);
+		}
+	}
+	
+	for
+	(	
+		row_index = (image_object->columns-1); 
+		row_index > 0;
+		row_index--
+	)
+	{
+		for
+		(
+			column_index = 0;
+			column_index < image_object->rows;
+			column_index++
+		)
+		{
+			
+			pixels[row_index][column_index][0] = image_object->pixels[column_index][image_object->columns - row_index][0];
+			pixels[row_index][column_index][1] = image_object->pixels[column_index][image_object->columns - row_index][1];
+			pixels[row_index][column_index][2] = image_object->pixels[column_index][image_object->columns - row_index][2];
+			
+		}
+	}
+	
+	image_object->pixels = pixels;
+	image_object->rows = new_rows;
+	image_object->columns = new_columns;
+	
+	return NULL;
+}
+
+void *contrast_image (void *arg)
+{
+	struct image *image_object = (struct image*) arg;
+	
+	int row_index, column_index;
+	
+	for
+	(	
+		row_index = 0; 
+		row_index < image_object->rows;
+		row_index++
+	)
+	{
+		for
+		(
+			column_index = 0; 
+			column_index < image_object->columns; 
+			column_index++
+		)
+		{
+			
+		}
+	}
+	
+	return NULL;
+}
+
 int main(int argc, char **argv)
 {
 	if(argc < 3)
@@ -235,11 +365,35 @@ int main(int argc, char **argv)
 	}
 	else if(strcmp(argv[2], "-L") == 0)
 	{
+		pthread_t *threads = (pthread_t*)malloc(sizeof(pthread_t)*number_of_threads);
 		
+		for(i = 0; i < number_of_threads; i++)
+		{
+
+			pthread_create(&threads[i], NULL, left_rotate_image, (void *)(image_object));
+		}
+
+		for(i = 0; i < number_of_threads; i++)
+		{
+
+			pthread_join(threads[i], NULL);
+		}
 	}
 	else if(strcmp(argv[2], "-R") == 0)
 	{
+		pthread_t *threads = (pthread_t*)malloc(sizeof(pthread_t)*number_of_threads);
 		
+		for(i = 0; i < number_of_threads; i++)
+		{
+
+			pthread_create(&threads[i], NULL, right_rotate_image, (void *)(image_object));
+		}
+
+		for(i = 0; i < number_of_threads; i++)
+		{
+
+			pthread_join(threads[i], NULL);
+		}
 	}
 	else if(strcmp(argv[2], "-I") == 0)
 	{
@@ -260,6 +414,22 @@ int main(int argc, char **argv)
 	else if(strcmp(argv[2], "-C") == 0)
 	{
 		float contrast_percentage = atof(argv[3]);
+		
+		image_object->contrast_percentage = contrast_percentage;
+		
+		pthread_t *threads = (pthread_t*)malloc(sizeof(pthread_t)*number_of_threads);
+		
+		for(i = 0; i < number_of_threads; i++)
+		{
+
+			pthread_create(&threads[i], NULL, contrast_image, (void *)(image_object));
+		}
+
+		for(i = 0; i < number_of_threads; i++)
+		{
+
+			pthread_join(threads[i], NULL);
+		}
 	}
 	
 	//Print image to stdout
@@ -270,11 +440,11 @@ int main(int argc, char **argv)
 	printf("%d\n", max_pixel_value);
 	
 	
-	for(i = 0; i < height; i++)
+	for(i = 0; i < image_object->rows; i++)
 	{
-		for(j = 0; j < width; j++)
+		for(j = 0; j < image_object->columns; j++)
 		{
-			printf("%d %d %d\n", pixels[i][j][0], pixels[i][j][1], pixels[i][j][2]);
+			printf("%d %d %d\n", image_object->pixels[i][j][0], image_object->pixels[i][j][1], image_object->pixels[i][j][2]);
 		}
 	}
 	
