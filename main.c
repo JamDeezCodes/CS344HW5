@@ -171,6 +171,19 @@ void *right_rotate_image (void *arg)
 		}
 	}
 	
+	// Free old 3D pixel array
+	
+	for(i = 0; i < image_object->rows; i++)
+	{
+		for(j = 0; j < image_object->columns; j++)
+		{
+			free(image_object->pixels[i][j]);
+		}
+		free(image_object->pixels[i]);
+	}
+	
+	free(image_object->pixels);
+	
 	image_object->pixels = pixels;
 	image_object->rows = new_rows;
 	image_object->columns = new_columns;
@@ -221,6 +234,18 @@ void *left_rotate_image (void *arg)
 			
 		}
 	}
+	
+	//Free old 3D pixel array
+	for(i = 0; i < image_object->rows; i++)
+	{
+		for(j = 0; j < image_object->columns; j++)
+		{
+			free(image_object->pixels[i][j]);
+		}
+		free(image_object->pixels[i]);
+	}
+	
+	free(image_object->pixels);
 	
 	image_object->pixels = pixels;
 	image_object->rows = new_rows;
@@ -279,7 +304,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	int ***pixels;
+	// int ***pixels;
 	char type[70];;
 	int width, height, max_pixel_value;
 	int red, blue, green;
@@ -293,16 +318,17 @@ int main(int argc, char **argv)
 	fscanf(stdin, "%d", &max_pixel_value);
 	
 	// Allocate array for pixels
-	pixels = (int ***) malloc(sizeof(int **) * height);
+	image_object->pixels = (int ***) malloc(sizeof(int **) * height);
 	for(i = 0; i < height; i++)
 	{
-		pixels[i] = (int **) malloc(sizeof(int *) * width);
+		image_object->pixels[i] = (int **) malloc(sizeof(int *) * width);
 		for(j = 0; j < width; j++)
 		{
-			pixels[i][j] = (int *) malloc(sizeof(int) * 3);
+			image_object->pixels[i][j] = (int *) malloc(sizeof(int) * 3);
 		}
 	}
 	
+	// Store pixel RGB values inside 3D array
 	for(i = 0; i < height; i++)
 	{
 		for(j = 0; j < width; j++)
@@ -310,9 +336,9 @@ int main(int argc, char **argv)
 			fscanf(stdin, "%d", &red);
 			fscanf(stdin, "%d", &blue);
 			fscanf(stdin, "%d", &green);
-			pixels[i][j][0] = red;
-			pixels[i][j][1] = blue;
-			pixels[i][j][2] = green;
+			image_object->pixels[i][j][0] = red;
+			image_object->pixels[i][j][1] = blue;
+			image_object->pixels[i][j][2] = green;
 		}
 	}
 	
@@ -321,14 +347,12 @@ int main(int argc, char **argv)
 	image_object->rows = height;
 	image_object->columns = width;
 	image_object->max_pixel_value = max_pixel_value;	
-	image_object->pixels = pixels;	
 	
 	int number_of_threads = atoi(argv[1]);
 	
 	//TODO: split rows up according to number_of_threads count
 	
-	// Handle different kinds of image transformations here
-	
+	// Handle different kinds of image transformations
 	if(strcmp(argv[2], "-red") == 0)
 	{
 		
@@ -448,7 +472,6 @@ int main(int argc, char **argv)
 	}
 	
 	//Print image to stdout
-	
 	printf("%s\n", type);
 	printf("%d ", width);
 	printf("%d\n", height);
@@ -467,12 +490,12 @@ int main(int argc, char **argv)
 	{
 		for(j = 0; j < width; j++)
 		{
-			free(pixels[i][j]);
+			free(image_object->pixels[i][j]);
 		}
-		free(pixels[i]);
+		free(image_object->pixels[i]);
 	}
 	
-	free(pixels);
+	free(image_object->pixels);
 	
 	free(image_object);
 	
