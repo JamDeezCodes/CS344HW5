@@ -235,22 +235,37 @@ void *contrast_image (void *arg)
 	
 	int row_index, column_index;
 	
-	for
-	(	
-		row_index = 0; 
-		row_index < image_object->rows;
-		row_index++
-	)
+	for(row_index = 0; row_index < image_object->rows; row_index++)
 	{
-		for
-		(
-			column_index = 0; 
-			column_index < image_object->columns; 
-			column_index++
-		)
+		for(column_index = 0; column_index < image_object->columns; column_index++)
 		{
+			if(image_object->pixels[row_index][column_index][0] <= image_object->max_pixel_value/2)
+			{
+				image_object->pixels[row_index][column_index][0] -= image_object->max_pixel_value*image_object->contrast_percentage;
+			}
+			else
+			{
+				image_object->pixels[row_index][column_index][0] += image_object->max_pixel_value*image_object->contrast_percentage;
+			}
+						
+			if(image_object->pixels[row_index][column_index][1] <= image_object->max_pixel_value/2)
+			{
+				image_object->pixels[row_index][column_index][1] -= image_object->max_pixel_value*image_object->contrast_percentage;
+			}
+			else
+			{
+				image_object->pixels[row_index][column_index][1] += image_object->max_pixel_value*image_object->contrast_percentage;
+			}
 			
-		}
+			if(image_object->pixels[row_index][column_index][2] <= image_object->max_pixel_value/2)
+			{
+				image_object->pixels[row_index][column_index][2] -= image_object->max_pixel_value*image_object->contrast_percentage;
+			}
+			else
+			{
+				image_object->pixels[row_index][column_index][2] += image_object->max_pixel_value*image_object->contrast_percentage;
+			}
+		}		
 	}
 	
 	return NULL;
