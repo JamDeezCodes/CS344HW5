@@ -8,7 +8,9 @@ typedef struct image
 	int rows;
 	int columns;
 	int max_pixel_value;
-	int row_to_end_at;
+	int row_to_stop;
+	int row_to_begin;
+	int **row_indeces;
 	float contrast_percentage;
 } image;
 
@@ -22,8 +24,8 @@ void *change_image_to_red (void *arg)
 	
 	for
 	(	
-		row_index = 0; 
-		row_index < image_object->rows;
+		row_index = image_object->row_to_begin; 
+		row_index < image_object->row_to_stop;
 		row_index++
 	)
 	{
@@ -50,8 +52,8 @@ void *change_image_to_green (void *arg)
 	
 	for
 	(	
-		row_index = 0; 
-		row_index < image_object->rows;
+		row_index = image_object->row_to_begin; 
+		row_index < image_object->row_to_stop;
 		row_index++
 	)
 	{
@@ -78,8 +80,8 @@ void *change_image_to_blue (void *arg)
 	
 	for
 	(	
-		row_index = 0; 
-		row_index < image_object->rows;
+		row_index = image_object->row_to_begin; 
+		row_index < image_object->row_to_stop;
 		row_index++
 	)
 	{
@@ -106,8 +108,8 @@ void *invert_image (void *arg)
 	
 	for
 	(	
-		row_index = 0; 
-		row_index < image_object->rows;
+		row_index = image_object->row_to_begin; 
+		row_index < image_object->row_to_stop;
 		row_index++
 	)
 	{
@@ -173,8 +175,8 @@ void *left_rotate_image (void *arg)
 	
 	for
 	(	
-		row_index = (image_object->columns-1); 
-		row_index > 0;
+		row_index = ((image_object->row_to_stop)-1); 
+		row_index > (image_object->row_to_begin);
 		row_index--
 	)
 	{
@@ -293,7 +295,8 @@ int main(int argc, char **argv)
 	
 	//TODO: split rows up according to number_of_threads count, last thread gets most responsibility
 	int rows_per_thread = image_object->rows/number_of_threads;
-	int row_to_stop_at = 0;
+	int row_to_begin = 0;
+	int row_to_stop = rows_per_thread;
 	
 	// Handle different kinds of image transformations
 	if(strcmp(argv[2], "-red") == 0)
@@ -303,13 +306,29 @@ int main(int argc, char **argv)
 		
 		for(i = 0; i < number_of_threads; i++)
 		{
-
+			image_object->row_to_begin = row_to_begin;
+			image_object->row_to_stop = row_to_stop;
+			
+			//depending on i, set the row for the thread to start and stop processing the image at
 			pthread_create(&threads[i], NULL, change_image_to_red, (void *)(image_object));
+			
+			row_to_begin += rows_per_thread;
+			
+			if(i == number_of_threads - 2)
+			{
+				row_to_stop = image_object->rows;
+			}
+			else
+			{
+				row_to_stop += rows_per_thread;
+			}
+			
+			fprintf(stderr, "", row_to_begin);
+			
 		}
 
 		for(i = 0; i < number_of_threads; i++)
 		{
-
 			pthread_join(threads[i], NULL);
 		}
 	}
@@ -319,8 +338,24 @@ int main(int argc, char **argv)
 		
 		for(i = 0; i < number_of_threads; i++)
 		{
-
+			image_object->row_to_begin = row_to_begin;
+			image_object->row_to_stop = row_to_stop;
+			
 			pthread_create(&threads[i], NULL, change_image_to_blue, (void *)(image_object));
+			
+			row_to_begin += rows_per_thread;
+			
+			if(i == number_of_threads - 2)
+			{
+				row_to_stop = image_object->rows;
+			}
+			else
+			{
+				row_to_stop += rows_per_thread;
+			}
+			
+			fprintf(stderr, "%d\n", row_to_begin);
+			
 		}
 
 		for(i = 0; i < number_of_threads; i++)
@@ -335,8 +370,24 @@ int main(int argc, char **argv)
 		
 		for(i = 0; i < number_of_threads; i++)
 		{
-
+			image_object->row_to_begin = row_to_begin;
+			image_object->row_to_stop = row_to_stop;
+			
 			pthread_create(&threads[i], NULL, change_image_to_green, (void *)(image_object));
+			
+			row_to_begin += rows_per_thread;
+			
+			if(i == number_of_threads - 2)
+			{
+				row_to_stop = image_object->rows;
+			}
+			else
+			{
+				row_to_stop += rows_per_thread;
+			}
+			
+			fprintf(stderr, "", row_to_begin);
+
 		}
 
 		for(i = 0; i < number_of_threads; i++)
@@ -350,6 +401,8 @@ int main(int argc, char **argv)
 		int new_rows = image_object->columns;
 		int new_columns = image_object->rows;
 		
+		rows_per_thread = new_rows/number_of_threads;
+		
 		// Allocate new array for pixels
 		pixels = (int ***) malloc(sizeof(int **) * image_object->columns);
 		for(i = 0; i < image_object->columns; i++)
@@ -360,12 +413,28 @@ int main(int argc, char **argv)
 				pixels[i][j] = (int *) malloc(sizeof(int) * 3);
 			}
 		}
-		
+				
 		pthread_t *threads = (pthread_t*)malloc(sizeof(pthread_t)*number_of_threads);
 		
 		for(i = 0; i < number_of_threads; i++)
 		{
+			image_object->row_to_begin = row_to_begin;
+			image_object->row_to_stop = row_to_stop;
+			
 			pthread_create(&threads[i], NULL, left_rotate_image, (void *)(image_object));
+			
+			row_to_begin += rows_per_thread;
+			
+			if(i == number_of_threads - 2)
+			{
+				row_to_stop = image_object->rows;
+			}
+			else
+			{
+				row_to_stop += rows_per_thread;
+			}
+			
+			fprintf(stderr, "", row_to_begin);
 		}
 
 		for(i = 0; i < number_of_threads; i++)
@@ -443,8 +512,21 @@ int main(int argc, char **argv)
 		
 		for(i = 0; i < number_of_threads; i++)
 		{
+			image_object->row_to_begin = row_to_begin;
+			image_object->row_to_stop = row_to_stop;
 
 			pthread_create(&threads[i], NULL, invert_image, (void *)(image_object));
+			
+			row_to_begin += rows_per_thread;
+			
+			if(i == number_of_threads - 1)
+			{
+				row_to_stop += image_object->rows;
+			}
+			else
+			{
+				row_to_stop += rows_per_thread;
+			}
 		}
 
 		for(i = 0; i < number_of_threads; i++)
@@ -476,8 +558,8 @@ int main(int argc, char **argv)
 	
 	//Print image to stdout
 	printf("%s\n", type);
-	printf("%d ", columns);
-	printf("%d\n", rows);
+	printf("%d ", image_object->columns);
+	printf("%d\n", image_object->rows);
 	printf("%d\n", max_pixel_value);
 	
 	
@@ -489,18 +571,18 @@ int main(int argc, char **argv)
 		}
 	}
 	
-	for(i = 0; i < rows; i++)
-	{
-		for(j = 0; j < columns; j++)
-		{
-			free(image_object->pixels[i][j]);
-		}
-		free(image_object->pixels[i]);
-	}
+	// for(i = 0; i < rows; i++)
+	// {
+		// for(j = 0; j < columns; j++)
+		// {
+			// free(image_object->pixels[i][j]);
+		// }
+		// free(image_object->pixels[i]);
+	// }
 	
-	free(image_object->pixels);
+	// free(image_object->pixels);
 	
-	free(image_object);
+	// free(image_object);
 	
 	return(0);		
 }
