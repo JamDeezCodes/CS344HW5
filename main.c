@@ -136,21 +136,20 @@ void *right_rotate_image (void *arg)
 	struct image *image_object = (struct image*) arg;
 	
 	int row_index, column_index;
-	int red_temp, blue_temp, green_temp;
 	int i, j;
 	
 	for
 	(	
-		row_index = 0; 
-		row_index < image_object->columns;
+		row_index = image_object->row_to_begin; 
+		row_index < image_object->row_to_stop;
 		row_index++
 	)
 	{
 		for
 		(
-			column_index = image_object->row_to_stop;
-			column_index > image_object->row_to_begin;
-			column_index--
+			column_index =  image_object->rows-1;	
+			column_index > 0;
+			column_index -- 
 		)
 		{
 			pixels[row_index][column_index][0] = image_object->pixels[image_object->rows - column_index][row_index][0];
@@ -167,7 +166,6 @@ void *left_rotate_image (void *arg)
 	struct image *image_object = (struct image*) arg;
 	
 	int row_index, column_index;
-	int red_temp, blue_temp, green_temp;
 	int i, j;
 		
 	for
@@ -184,9 +182,9 @@ void *left_rotate_image (void *arg)
 			column_index++
 		)
 		{
-			pixels[row_index][column_index][0] = image_object->pixels[column_index][image_object->columns - row_index][0];
-			pixels[row_index][column_index][1] = image_object->pixels[column_index][image_object->columns - row_index][1];
-			pixels[row_index][column_index][2] = image_object->pixels[column_index][image_object->columns - row_index][2];
+			pixels[row_index][column_index][0] = image_object->pixels[column_index][row_index][0];
+			pixels[row_index][column_index][1] = image_object->pixels[column_index][row_index][1];
+			pixels[row_index][column_index][2] = image_object->pixels[column_index][row_index][2];
 		}
 	}
 	
@@ -199,7 +197,7 @@ void *contrast_image (void *arg)
 	
 	int row_index, column_index;
 	
-	for(row_index = 0; row_index < image_object->rows; row_index++)
+	for(row_index = image_object->row_to_begin; row_index < image_object->row_to_stop; row_index++)
 	{
 		for(column_index = 0; column_index < image_object->columns; column_index++)
 		{
@@ -322,12 +320,6 @@ int main(int argc, char **argv)
 			row_to_begin += rows_per_thread;
 		}
 		
-		for(i = 0; i < number_of_threads; i++)
-		{
-			fprintf(stderr,"begin: %d\n", image_objects[i]->row_to_begin);
-			fprintf(stderr,"end: %d\n", image_objects[i]->row_to_stop);
-		}			
-
 		for(i = 0; i < number_of_threads; i++)
 		{
 			//depending on i, set the row for the thread to start and stop processing the image at
@@ -459,12 +451,6 @@ int main(int argc, char **argv)
 			
 		}
 		
-		for(i = 0; i < number_of_threads; i++)
-		{
-			fprintf(stderr,"begin: %d\n", image_objects[i]->row_to_begin);
-			fprintf(stderr,"end: %d\n", image_objects[i]->row_to_stop);
-		}
-					
 		for(i = 0; i < number_of_threads; i++)
 		{
 			pthread_create(&threads[i], NULL, left_rotate_image, (void *)(image_objects[i]));
@@ -600,14 +586,37 @@ int main(int argc, char **argv)
 	{
 		float contrast_percentage = atof(argv[3]);
 		
-		image_object->contrast_percentage = contrast_percentage;
-		
 		pthread_t *threads = (pthread_t*)malloc(sizeof(pthread_t)*number_of_threads);
+		struct image **image_objects = (struct image**) malloc(sizeof(struct image*) * number_of_threads);
+		
+		for(i = 0; i < number_of_threads; i++)
+		{
+			image_objects[i] = (struct image*) malloc(sizeof(struct image*));
+			image_objects[i]->pixels = (int ***) malloc(sizeof(int **) * image_object->columns);
+			image_objects[i]->contrast_percentage = contrast_percentage;
+			image_objects[i]->pixels = image_object->pixels;
+			image_objects[i]->rows = rows;
+			image_objects[i]->max_pixel_value = max_pixel_value;
+			image_objects[i]->columns = columns;
+			image_objects[i]->row_to_begin = row_to_begin;
+			image_objects[i]->row_to_stop = row_to_stop;
+			
+			if(i == number_of_threads - 2)
+			{
+				row_to_stop = image_object->rows;
+			}
+			else
+			{
+				row_to_stop += rows_per_thread;
+			}
+
+			row_to_begin += rows_per_thread;
+		}
 		
 		for(i = 0; i < number_of_threads; i++)
 		{
 
-			pthread_create(&threads[i], NULL, contrast_image, (void *)(image_object));
+			pthread_create(&threads[i], NULL, contrast_image, (void *)(image_objects[i]));
 		}
 
 		for(i = 0; i < number_of_threads; i++)
