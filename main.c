@@ -632,7 +632,6 @@ int main(int argc, char **argv)
 	printf("%d\n", image_object->rows);
 	printf("%d\n", max_pixel_value);
 	
-	
 	for(i = 0; i < image_object->rows; i++)
 	{
 		for(j = 0; j < image_object->columns; j++)
@@ -640,19 +639,6 @@ int main(int argc, char **argv)
 			printf("%d %d %d\n", image_object->pixels[i][j][0], image_object->pixels[i][j][1], image_object->pixels[i][j][2]);
 		}
 	}
-	
-	// for(i = 0; i < rows; i++)
-	// {
-		// for(j = 0; j < columns; j++)
-		// {
-			// free(image_object->pixels[i][j]);
-		// }
-		// free(image_object->pixels[i]);
-	// }
-	
-	// free(image_object->pixels);
-	
-	// free(image_object);
 	
 	return(0);		
 }
