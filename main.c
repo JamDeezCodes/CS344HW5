@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 
+//Define image struct
 typedef struct image 
 {
 	int ***pixels;
@@ -21,19 +22,11 @@ void *change_image_to_red (void *arg)
 	
 	int row_index, column_index;
 	
-	for
-	(	
-		row_index = image_object->row_to_begin; 
-		row_index < image_object->row_to_stop;
-		row_index++
-	)
+	//Iterate through entire array and set blue/green pixel values to zero
+	//Start and stop at the assigned row indexes for threading
+	for(row_index = image_object->row_to_begin; row_index < image_object->row_to_stop; row_index++)
 	{
-		for
-		(
-			column_index = 0; 
-			column_index < image_object->columns; 
-			column_index++
-		)
+		for(column_index = 0; column_index < image_object->columns; column_index++)
 		{
 			image_object->pixels[row_index][column_index][1] = 0;
 			image_object->pixels[row_index][column_index][2] = 0;
@@ -49,19 +42,10 @@ void *change_image_to_green (void *arg)
 	
 	int row_index, column_index;
 	
-	for
-	(	
-		row_index = image_object->row_to_begin; 
-		row_index < image_object->row_to_stop;
-		row_index++
-	)
+	//Iterate through array and set blue/red pixel values to zero
+	for(row_index = image_object->row_to_begin; row_index < image_object->row_to_stop; row_index++)
 	{
-		for
-		(
-			column_index = 0; 
-			column_index < image_object->columns; 
-			column_index++
-		)
+		for(column_index = 0; column_index < image_object->columns; column_index++)
 		{
 			image_object->pixels[row_index][column_index][0] = 0;
 			image_object->pixels[row_index][column_index][2] = 0;
@@ -77,19 +61,10 @@ void *change_image_to_blue (void *arg)
 	
 	int row_index, column_index;
 	
-	for
-	(	
-		row_index = image_object->row_to_begin; 
-		row_index < image_object->row_to_stop;
-		row_index++
-	)
+	//Iterate through entire array and set green/red pixel values to zero
+	for(row_index = image_object->row_to_begin; row_index < image_object->row_to_stop; row_index++)
 	{
-		for
-		(
-			column_index = 0; 
-			column_index < image_object->columns; 
-			column_index++
-		)
+		for(column_index = 0; column_index < image_object->columns; column_index++)
 		{
 			image_object->pixels[row_index][column_index][0] = 0;
 			image_object->pixels[row_index][column_index][1] = 0;
@@ -105,19 +80,10 @@ void *invert_image (void *arg)
 	
 	int row_index, column_index;
 	
-	for
-	(	
-		row_index = image_object->row_to_begin; 
-		row_index < image_object->row_to_stop;
-		row_index++
-	)
+	//To invert image, subtract existing pixel values for RGB from max_pixel_value
+	for(row_index = image_object->row_to_begin; row_index < image_object->row_to_stop; row_index++)
 	{
-		for
-		(
-			column_index = 0; 
-			column_index < image_object->columns; 
-			column_index++
-		)
+		for(column_index = 0; column_index < image_object->columns; column_index++)
 		{
 			image_object->pixels[row_index][column_index][0] = 
 				image_object->max_pixel_value - image_object->pixels[row_index][column_index][0];
@@ -138,6 +104,7 @@ void *right_rotate_image (void *arg)
 	int row_index, column_index;
 	int i, j;
 	
+	//Old bottom row, zeroth column is now zeroth row, zeroth column; manipulate indexes appropriately
 	for
 	(	
 		row_index = image_object->row_to_begin; 
@@ -147,7 +114,7 @@ void *right_rotate_image (void *arg)
 	{
 		for
 		(
-			column_index =  image_object->rows-1;	
+			column_index = image_object->rows-1;	
 			column_index > 0;
 			column_index -- 
 		)
@@ -168,6 +135,7 @@ void *left_rotate_image (void *arg)
 	int row_index, column_index;
 	int i, j;
 		
+	//Old zeroth row, final column is new zeroth row, zeroth column; simply read in array to new dimensions by swapping indexes
 	for
 	(	
 		row_index = image_object->row_to_stop; 
@@ -197,6 +165,7 @@ void *contrast_image (void *arg)
 	
 	int row_index, column_index;
 	
+	//Manipulate RGB pixel values according to change contrast
 	for(row_index = image_object->row_to_begin; row_index < image_object->row_to_stop; row_index++)
 	{
 		for(column_index = 0; column_index < image_object->columns; column_index++)
@@ -241,7 +210,6 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	// int ***pixels;
 	char type[70];;
 	int columns, rows, max_pixel_value;
 	int red, blue, green;
@@ -263,6 +231,12 @@ int main(int argc, char **argv)
 		{
 			image_object->pixels[i][j] = (int *) malloc(sizeof(int) * 3);
 		}
+	}
+	
+	if(!image_object->pixels)
+	{
+		fprintf(stderr, "Cannot allocate pixel array\n");
+		exit(1);
 	}
 	
 	// Store pixel RGB values inside 3D array
@@ -294,20 +268,26 @@ int main(int argc, char **argv)
 	// Handle different kinds of image transformations
 	if(strcmp(argv[2], "-red") == 0)
 	{
-		
+		//Allocate list of threads for splitting up workload according number of threads passed in
 		pthread_t *threads = (pthread_t*)malloc(sizeof(pthread_t)*number_of_threads);
+		
+		//Allocate list of image objects for storing which rows a thread must begin and end its work 
 		struct image **image_objects = (struct image**) malloc(sizeof(struct image*) * number_of_threads);
 		
 		for(i = 0; i < number_of_threads; i++)
 		{
+			//Assign necessary attributes to each object 
 			image_objects[i] = (struct image*) malloc(sizeof(struct image*));
 			image_objects[i]->pixels = (int ***) malloc(sizeof(int **) * image_object->columns);
+			//Every object shares same pixel array
 			image_objects[i]->pixels = image_object->pixels;
 			image_objects[i]->rows = rows;
 			image_objects[i]->columns = columns;
 			image_objects[i]->row_to_begin = row_to_begin;
 			image_objects[i]->row_to_stop = row_to_stop;
 			
+			//Delegate the workload for each thread
+			//If on the last loop iteration, simply have the last thread work on every remaining row in the array
 			if(i == number_of_threads - 2)
 			{
 				row_to_stop = image_object->rows;
@@ -320,17 +300,19 @@ int main(int argc, char **argv)
 			row_to_begin += rows_per_thread;
 		}
 		
+		//Create threads and assign each image object to be worked on by each thread
 		for(i = 0; i < number_of_threads; i++)
 		{
-			//depending on i, set the row for the thread to start and stop processing the image at
 			pthread_create(&threads[i], NULL, change_image_to_red, (void *)(image_objects[i]));
 		}
 
+		//Join threads after their work is completed
 		for(i = 0; i < number_of_threads; i++)
 		{
 			pthread_join(threads[i], NULL);
 		}
 	}
+	//Rinse and repeat for each processing type
 	else if(strcmp(argv[2], "-blue") == 0)
 	{
 		pthread_t *threads = (pthread_t*)malloc(sizeof(pthread_t)*number_of_threads);
@@ -408,13 +390,15 @@ int main(int argc, char **argv)
 	}
 	else if(strcmp(argv[2], "-L") == 0)
 	{
+		//Row and column sizes must swap for rotation
 		int new_rows = image_object->columns;
 		int new_columns = image_object->rows;
 		
+		//Recalculate rows per thread according to columns size instead
 		rows_per_thread = new_rows/number_of_threads;
 		row_to_stop = rows_per_thread;
 		
-		// Allocate new array for pixels
+		// Allocate new array for pixels with new dimensions
 		pixels = (int ***) malloc(sizeof(int **) * image_object->columns);
 		for(i = 0; i < image_object->columns; i++)
 		{
@@ -471,12 +455,15 @@ int main(int argc, char **argv)
 			free(image_object->pixels[i]);
 		}
 		
+		//Assign image_object's pixel array to global array with newly rotated image
 		image_object->pixels = pixels;
 		image_object->rows = new_rows;
 		image_object->columns = new_columns;
 	}
 	else if(strcmp(argv[2], "-R") == 0)
 	{
+		
+		//Perform same operations for right rotation, just use pointer to right rotation method
 		int new_rows = image_object->columns;
 		int new_columns = image_object->rows;
 		
@@ -555,6 +542,7 @@ int main(int argc, char **argv)
 			image_objects[i]->pixels = (int ***) malloc(sizeof(int **) * image_object->columns);
 			image_objects[i]->pixels = image_object->pixels;
 			image_objects[i]->rows = rows;
+			//Assign max_pixel_value for use in Invert method
 			image_objects[i]->max_pixel_value = max_pixel_value;
 			image_objects[i]->columns = columns;
 			image_objects[i]->row_to_begin = row_to_begin;
@@ -584,6 +572,7 @@ int main(int argc, char **argv)
 	}
 	else if(strcmp(argv[2], "-C") == 0)
 	{
+		//Use contrast_percentage and assign while creating each image objects for use during contrast method
 		float contrast_percentage = atof(argv[3]);
 		
 		pthread_t *threads = (pthread_t*)malloc(sizeof(pthread_t)*number_of_threads);
@@ -615,7 +604,6 @@ int main(int argc, char **argv)
 		
 		for(i = 0; i < number_of_threads; i++)
 		{
-
 			pthread_create(&threads[i], NULL, contrast_image, (void *)(image_objects[i]));
 		}
 
@@ -625,8 +613,13 @@ int main(int argc, char **argv)
 			pthread_join(threads[i], NULL);
 		}
 	}
+	else
+	{
+		fprintf(stderr, "FLAGS: -red -green -blue -I -R -L -C P\n");
+		exit(1);
+	}
 	
-	//Print image to stdout
+	//Print image header and pixels to stdout
 	printf("%s\n", type);
 	printf("%d ", image_object->columns);
 	printf("%d\n", image_object->rows);
