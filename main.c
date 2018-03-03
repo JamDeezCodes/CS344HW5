@@ -270,15 +270,35 @@ int main(int argc, char **argv)
 	{
 		//Allocate list of threads for splitting up workload according number of threads passed in
 		pthread_t *threads = (pthread_t*)malloc(sizeof(pthread_t)*number_of_threads);
+		if(!threads)
+		{
+			fprintf(stderr, "ERROR: Cannot create threads\n");
+		}
 		
 		//Allocate list of image objects for storing which rows a thread must begin and end its work 
 		struct image **image_objects = (struct image**) malloc(sizeof(struct image*) * number_of_threads);
+		if(!image_objects)
+		{
+			fprintf(stderr, "ERROR: Cannot allocate image objects\n");
+		}
 		
 		for(i = 0; i < number_of_threads; i++)
 		{
 			//Assign necessary attributes to each object 
 			image_objects[i] = (struct image*) malloc(sizeof(struct image*));
-			image_objects[i]->pixels = (int ***) malloc(sizeof(int **) * image_object->columns);
+			image_objects[i]->pixels = (int ***) malloc(sizeof(int **) * image_object->rows);
+			
+			if(!image_objects[i])
+			{
+				fprintf(stderr, "ERROR: Cannot allocate pixel image object\n");
+			}
+			
+			
+			if(!image_objects[i]->pixels)
+			{
+				fprintf(stderr, "ERROR: Cannot allocate pixel array for image object\n");
+			}
+						
 			//Every object shares same pixel array
 			image_objects[i]->pixels = image_object->pixels;
 			image_objects[i]->rows = rows;
@@ -311,17 +331,42 @@ int main(int argc, char **argv)
 		{
 			pthread_join(threads[i], NULL);
 		}
+		
+		free(threads);
 	}
 	//Rinse and repeat for each processing type
 	else if(strcmp(argv[2], "-blue") == 0)
 	{
 		pthread_t *threads = (pthread_t*)malloc(sizeof(pthread_t)*number_of_threads);
+		
+		if(!threads)
+		{
+			fprintf(stderr, "ERROR: Cannot create threads\n");
+		}
+		
 		struct image **image_objects = (struct image**) malloc(sizeof(struct image*) * number_of_threads);
+		
+		if(!image_objects)
+		{
+			fprintf(stderr, "ERROR: Cannot allocate image objects\n");
+		}
 		
 		for(i = 0; i < number_of_threads; i++)
 		{
 			image_objects[i] = (struct image*) malloc(sizeof(struct image*));
-			image_objects[i]->pixels = (int ***) malloc(sizeof(int **) * image_object->columns);
+			image_objects[i]->pixels = (int ***) malloc(sizeof(int **) * image_object->rows);
+			
+			if(!image_objects[i])
+			{
+				fprintf(stderr, "ERROR: Cannot allocate pixel image object\n");
+			}
+			
+			
+			if(!image_objects[i]->pixels)
+			{
+				fprintf(stderr, "ERROR: Cannot allocate pixel array for image object\n");
+			}
+						
 			image_objects[i]->pixels = image_object->pixels;
 			image_objects[i]->rows = rows;
 			image_objects[i]->columns = columns;
@@ -350,16 +395,41 @@ int main(int argc, char **argv)
 
 			pthread_join(threads[i], NULL);
 		}
+		
+		free(threads);
 	}
 	else if(strcmp(argv[2], "-green") == 0)
 	{
 		pthread_t *threads = (pthread_t*)malloc(sizeof(pthread_t)*number_of_threads);
+		
+		if(!threads)
+		{
+			fprintf(stderr, "ERROR: Cannot create threads\n");
+		}
+		
 		struct image **image_objects = (struct image**) malloc(sizeof(struct image*) * number_of_threads);
+		
+		if(!image_objects)
+		{
+			fprintf(stderr, "ERROR: Cannot allocate image objects\n");
+		}
 		
 		for(i = 0; i < number_of_threads; i++)
 		{
 			image_objects[i] = (struct image*) malloc(sizeof(struct image*));
-			image_objects[i]->pixels = (int ***) malloc(sizeof(int **) * image_object->columns);
+			image_objects[i]->pixels = (int ***) malloc(sizeof(int **) * image_object->rows);
+			
+			if(!image_objects[i])
+			{
+				fprintf(stderr, "ERROR: Cannot allocate pixel image object\n");
+			}
+			
+			
+			if(!image_objects[i]->pixels)
+			{
+				fprintf(stderr, "ERROR: Cannot allocate pixel array for image object\n");
+			}
+			
 			image_objects[i]->pixels = image_object->pixels;
 			image_objects[i]->rows = rows;
 			image_objects[i]->columns = columns;
@@ -408,14 +478,37 @@ int main(int argc, char **argv)
 				pixels[i][j] = (int *) malloc(sizeof(int) * 3);
 			}
 		}
-				
+		
 		pthread_t *threads = (pthread_t*)malloc(sizeof(pthread_t)*number_of_threads);
+		
+		if(!threads)
+		{
+			fprintf(stderr, "ERROR: Cannot create threads\n");
+		}
+		
 		struct image **image_objects = (struct image**) malloc(sizeof(struct image*) * number_of_threads);
+		
+		if(!image_objects)
+		{
+			fprintf(stderr, "ERROR: Cannot allocate image objects\n");
+		}
 		
 		for(i = 0; i < number_of_threads; i++)
 		{
 			image_objects[i] = (struct image*) malloc(sizeof(struct image*));
-			image_objects[i]->pixels = (int ***) malloc(sizeof(int **) * image_object->columns);
+			image_objects[i]->pixels = (int ***) malloc(sizeof(int **) * image_object->rows);
+			
+			if(!image_objects[i])
+			{
+				fprintf(stderr, "ERROR: Cannot allocate pixel image object\n");
+			}
+			
+			
+			if(!image_objects[i]->pixels)
+			{
+				fprintf(stderr, "ERROR: Cannot allocate pixel array for image object\n");
+			}
+			
 			image_objects[i]->pixels = image_object->pixels;
 			image_objects[i]->rows = rows;
 			image_objects[i]->columns = columns;
@@ -482,12 +575,35 @@ int main(int argc, char **argv)
 		}
 				
 		pthread_t *threads = (pthread_t*)malloc(sizeof(pthread_t)*number_of_threads);
+		
+		if(!threads)
+		{
+			fprintf(stderr, "ERROR: Cannot create threads\n");
+		}
+		
 		struct image **image_objects = (struct image**) malloc(sizeof(struct image*) * number_of_threads);
+		
+		if(!image_objects)
+		{
+			fprintf(stderr, "ERROR: Cannot allocate image objects\n");
+		}
 		
 		for(i = 0; i < number_of_threads; i++)
 		{
 			image_objects[i] = (struct image*) malloc(sizeof(struct image*));
-			image_objects[i]->pixels = (int ***) malloc(sizeof(int **) * image_object->columns);
+			image_objects[i]->pixels = (int ***) malloc(sizeof(int **) * image_object->rows);
+			
+			if(!image_objects[i])
+			{
+				fprintf(stderr, "ERROR: Cannot allocate pixel image object\n");
+			}
+			
+			
+			if(!image_objects[i]->pixels)
+			{
+				fprintf(stderr, "ERROR: Cannot allocate pixel array for image object\n");
+			}
+			
 			image_objects[i]->pixels = image_object->pixels;
 			image_objects[i]->rows = rows;
 			image_objects[i]->columns = columns;
@@ -534,12 +650,35 @@ int main(int argc, char **argv)
 	else if(strcmp(argv[2], "-I") == 0)
 	{
 		pthread_t *threads = (pthread_t*)malloc(sizeof(pthread_t)*number_of_threads);
+		
+		if(!threads)
+		{
+			fprintf(stderr, "ERROR: Cannot create threads\n");
+		}
+		
 		struct image **image_objects = (struct image**) malloc(sizeof(struct image*) * number_of_threads);
+		
+		if(!image_objects)
+		{
+			fprintf(stderr, "ERROR: Cannot allocate image objects\n");
+		}
 		
 		for(i = 0; i < number_of_threads; i++)
 		{
 			image_objects[i] = (struct image*) malloc(sizeof(struct image*));
-			image_objects[i]->pixels = (int ***) malloc(sizeof(int **) * image_object->columns);
+			image_objects[i]->pixels = (int ***) malloc(sizeof(int **) * image_object->rows);
+			
+			if(!image_objects[i])
+			{
+				fprintf(stderr, "ERROR: Cannot allocate pixel image object\n");
+			}
+			
+			
+			if(!image_objects[i]->pixels)
+			{
+				fprintf(stderr, "ERROR: Cannot allocate pixel array for image object\n");
+			}
+			
 			image_objects[i]->pixels = image_object->pixels;
 			image_objects[i]->rows = rows;
 			//Assign max_pixel_value for use in Invert method
@@ -569,6 +708,8 @@ int main(int argc, char **argv)
 		{
 			pthread_join(threads[i], NULL);
 		}
+		
+		free(threads);
 	}
 	else if(strcmp(argv[2], "-C") == 0)
 	{
@@ -576,12 +717,35 @@ int main(int argc, char **argv)
 		float contrast_percentage = atof(argv[3]);
 		
 		pthread_t *threads = (pthread_t*)malloc(sizeof(pthread_t)*number_of_threads);
+		
+		if(!threads)
+		{
+			fprintf(stderr, "ERROR: Cannot create threads\n");
+		}
+		
 		struct image **image_objects = (struct image**) malloc(sizeof(struct image*) * number_of_threads);
+		
+		if(!image_objects)
+		{
+			fprintf(stderr, "ERROR: Cannot allocate image objects\n");
+		}
 		
 		for(i = 0; i < number_of_threads; i++)
 		{
 			image_objects[i] = (struct image*) malloc(sizeof(struct image*));
-			image_objects[i]->pixels = (int ***) malloc(sizeof(int **) * image_object->columns);
+			image_objects[i]->pixels = (int ***) malloc(sizeof(int **) * image_object->rows);
+			
+			if(!image_objects[i])
+			{
+				fprintf(stderr, "ERROR: Cannot allocate pixel image object\n");
+			}
+			
+			
+			if(!image_objects[i]->pixels)
+			{
+				fprintf(stderr, "ERROR: Cannot allocate pixel array for image object\n");
+			}
+			
 			image_objects[i]->contrast_percentage = contrast_percentage;
 			image_objects[i]->pixels = image_object->pixels;
 			image_objects[i]->rows = rows;
@@ -612,6 +776,8 @@ int main(int argc, char **argv)
 
 			pthread_join(threads[i], NULL);
 		}
+				
+		free(threads);
 	}
 	else
 	{
@@ -632,6 +798,19 @@ int main(int argc, char **argv)
 			printf("%d %d %d\n", image_object->pixels[i][j][0], image_object->pixels[i][j][1], image_object->pixels[i][j][2]);
 		}
 	}
+	
+	for(i = 0; i < image_object->rows; i++)
+	{
+		for(j = 0; j < image_object->columns; j++)
+		{
+			free(image_object->pixels[i][j]);
+		}
+		free(image_object->pixels[i]);
+	}
+	
+	free(image_object->pixels);
+	
+	free(image_object);
 	
 	return(0);		
 }
