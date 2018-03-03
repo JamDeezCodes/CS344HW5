@@ -332,6 +332,7 @@ int main(int argc, char **argv)
 			pthread_join(threads[i], NULL);
 		}
 		
+		free(image_objects);
 		free(threads);
 	}
 	//Rinse and repeat for each processing type
@@ -396,6 +397,7 @@ int main(int argc, char **argv)
 			pthread_join(threads[i], NULL);
 		}
 		
+		free(image_objects);
 		free(threads);
 	}
 	else if(strcmp(argv[2], "-green") == 0)
@@ -457,6 +459,9 @@ int main(int argc, char **argv)
 		{
 			pthread_join(threads[i], NULL);
 		}
+		
+		free(image_objects);
+		free(threads);
 	}
 	else if(strcmp(argv[2], "-L") == 0)
 	{
@@ -547,6 +552,9 @@ int main(int argc, char **argv)
 			}
 			free(image_object->pixels[i]);
 		}
+		
+		free(threads);
+		free(image_objects);	
 		
 		//Assign image_object's pixel array to global array with newly rotated image
 		image_object->pixels = pixels;
@@ -643,6 +651,10 @@ int main(int argc, char **argv)
 			free(image_object->pixels[i]);
 		}
 		
+		
+		free(threads);
+		free(image_objects);	
+		
 		image_object->pixels = pixels;
 		image_object->rows = new_rows;
 		image_object->columns = new_columns;
@@ -709,6 +721,12 @@ int main(int argc, char **argv)
 			pthread_join(threads[i], NULL);
 		}
 		
+		// for(i = 0; i < number_of_threads; i++)
+		// {
+			// free(image_objects[i]);
+		// }
+		
+		free(image_objects);
 		free(threads);
 	}
 	else if(strcmp(argv[2], "-C") == 0)
@@ -776,13 +794,14 @@ int main(int argc, char **argv)
 
 			pthread_join(threads[i], NULL);
 		}
-				
+			
+		free(image_objects);			
 		free(threads);
 	}
 	else
 	{
-		fprintf(stderr, "FLAGS: -red -green -blue -I -R -L -C P\n");
-		exit(1);
+		// fprintf(stderr, "FLAGS: -red -green -blue -I -R -L -C P\n");
+		// exit(1);
 	}
 	
 	//Print image header and pixels to stdout
